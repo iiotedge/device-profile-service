@@ -1,0 +1,90 @@
+server:
+  port: ${SERVER_PORT:8056}
+
+spring:
+  config:
+    activate:
+      on-profile: hProd
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/iotmining}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:8506}
+#    url: jdbc:postgresql://localhost:5432/iotmining
+#    username: postgres
+#    password: 8506
+    hikari:
+      pool-name: DeviceProfilePool
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+      connection-timeout: 2000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    database: postgresql
+    show-sql: true
+
+  jackson:
+    default-property-inclusion: non_null
+
+  # Flyway Configuration (for PostgreSQL)
+  # Moved under 'spring' key for standard Boot behavior
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    # If using standard SQL migrations, the default driver is detected automatically.
+    # Only uncomment below if specifically migrating Cassandra via a custom setup.
+    # driver-class-name: org.flywaydb.database.cassandra.CassandraDriver
+
+# --- External Services ---
+# Ensure these match the variables in your iiotedge-cli.sh script
+services:
+  device-service:
+    url: ${SERVICES_DEVICE_SERVICE_URL:http://localhost:8055}
+
+
+
+
+    #spring:
+#  datasource:
+#    driver-class-name: org.postgresql.Driver
+#    url: jdbc:postgresql://localhost:5432/iotmining
+#    username: postgres
+#    password: 8506
+#    hikari:
+#      pool-name: LoginServicePool
+#      maximum-pool-size: 10
+#      minimum-idle: 5
+#      idle-timeout: 30000
+#      connection-timeout: 2000
+#      max-lifetime: 1800000
+#  jackson:
+#    default-property-inclusion: non_null
+#  jpa:
+#    hibernate:
+#      ddl-auto: update
+##      ddl-auto: create-drop
+#    database: postgresql
+##  cassandra:
+##    contact-points: 127.0.0.1
+##    port: 9042
+##    keyspace-name: dms_data
+##    schema-action: CREATE_IF_NOT_EXISTS
+##    #    username: cassandra
+##    #    password: cassandra
+##    local-datacenter: datacenter1
+#
+#flyway:
+#  locations: classpath:db/migration
+#  keyspace: iotmining
+#  enabled: true
+#  driver-class-name: org.flywaydb.database.cassandra.CassandraDriver
+#  baseline-on-migrate: true
+#
+#
+#server:
+#  port: 8056

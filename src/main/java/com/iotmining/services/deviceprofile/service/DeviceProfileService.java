@@ -16,6 +16,9 @@ public interface DeviceProfileService {
     DeviceProfile update(UUID id, DeviceProfileRequestDto dto);
     void delete(UUID id);
     Map<String, Object> getResolved(UUID id);
+
+    Page<DeviceProfile> getAll(Pageable pageable, String textSearch);
+
     Page<DeviceProfile> getAll(Pageable pageable);
     Map<UUID, Map<String, Object>> getBatchResolved(List<UUID> ids);
 

@@ -1,0 +1,4 @@
+# Keep the build context small and avoid ever baking local secrets/state
+# into an image layer - only target/device-profile-service.jar is actually needed.
+*
+!target/device-profile-service.jar

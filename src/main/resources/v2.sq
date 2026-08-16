@@ -1,0 +1,68 @@
+-- 1. Create the new collection table
+CREATE TABLE IF NOT EXISTS device_profile_msg_types (
+    device_profile_id UUID NOT NULL,
+    msg_type VARCHAR(255) NOT NULL,
+    FOREIGN KEY (device_profile_id) REFERENCES device_profiles(id) ON DELETE CASCADE
+);
+
+-- 2. Add an index for performance (optional but recommended)
+CREATE INDEX IF NOT EXISTS idx_device_profile_msg_types_id ON device_profile_msg_types(device_profile_id);
+
+-- 3. MIGRATION: Insert 'default' for all existing profiles that don't have types yet
+-- This ensures your existing devices continue to work immediately.
+INSERT INTO device_profile_msg_types (device_profile_id, msg_type)
+SELECT id, 'default'
+FROM device_profiles
+WHERE NOT EXISTS (
+    SELECT 1 FROM device_profile_msg_types WHERE device_profile_id = device_profiles.id;
+
+
+	SELECT dp.name, mt.msg_type
+FROM device_profiles dp
+JOIN device_profile_msg_types mt ON dp.id = mt.device_profile_id;
+);
+
+INSERT INTO device_profile_msg_types (device_profile_id, msg_type)
+VALUES
+    ('12f59ed0-9d75-4fce-a767-d4f28e7d86cb', 'g'),
+    ('12f59ed0-9d75-4fce-a767-d4f28e7d86cb', 'e');
+
+
+SELECT * FROM device_profiles;
+
+
+-- 1. Add the 'msg_type' column to the 'device_inputs' table
+-- We set a DEFAULT 'default' so all your existing keys remain valid immediately.
+ALTER TABLE device_inputs
+ADD COLUMN msg_type VARCHAR(255) DEFAULT 'default' NOT NULL;
+
+-- 2. (Optional) Create an index for performance
+-- This helps when loading profiles with hundreds of keys
+CREATE INDEX IF NOT EXISTS idx_device_inputs_msg_type ON device_inputs(msg_type);
+
+SELECT key, msg_type
+FROM device_inputs
+WHERE device_profile_id = '12f59ed0-9d75-4fce-a767-d4f28e7d86cb'; -- Replace with your Profile UUID
+
+UPDATE device_inputs
+SET msg_type = 'g'
+WHERE device_profile_id = '12f59ed0-9d75-4fce-a767-d4f28e7d86cb'
+AND key IN ('latitude', 'longitude', 'lat', 'lon', 'speed', 'heading', 'altitude');
+UPDATE device_inputs
+SET msg_type = 'e'
+WHERE device_profile_id = '12f59ed0-9d75-4fce-a767-d4f28e7d86cb'
+AND key IN ('rpm', 'fuel_level', 'temp', 'data.summary.rsoc', 'data.summary.voltage_V', 'data.summary.current_A');
+
+
+ALTER TABLE telemetry_data
+ADD COLUMN msg_type VARCHAR(50) DEFAULT 'default';
+
+-- Create an index for faster filtering (Optional but recommended)
+CREATE INDEX idx_telemetry_msg_type ON telemetry_data(device_id, msg_type, time DESC);
+
+-- Check the last 10 records for this specific device
+SELECT time, msg_type, data
+FROM telemetry_data
+WHERE device_id = '44dbf258-68fc-4a0d-8fcc-c01fa36f2aff'
+ORDER BY time DESC
+LIMIT 10;
